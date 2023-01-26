@@ -47,13 +47,11 @@ jobs:
           sudo apt-get remove --purge -y needrestart 
           sudo apt-get install -y  f2fs-tools liblz4-tool zip simg2img
           echo "Maybe we only need Azure modules"
-          sudo apt-get install linux-modules-extra-5.15.0-1031-azure
+          sudo apt-get install linux-modules-extra-$(uname -r)
           echo "Do we have the f2fs module now?"
           ls /lib/modules/$(uname -r)/kernel/fs/f2fs
           sudo depmod
-          echo "Do we even have F2FS driver ? "
-          cat /boot/config-$(uname -r) | grep F2FS
-          echo "Maybe we should wait a bit"
+          echo "We should wait a bit"
           sleep 10
           sudo modprobe f2fs
           cat /proc/modules | grep f2fs
