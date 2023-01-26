@@ -44,10 +44,9 @@ jobs:
         if: env.need_update == 1
         run: |
           sudo apt-get update
-          sudo apt-get install -y liblz4-tool zip simg2img f2fs-tools
+          sudo apt-get remove --purge -y needrestart 
+          sudo apt-get install -y  f2fs-tools liblz4-tool zip simg2img
           sudo depmod
-          sudo needrestart -b
-          sudo needrestart -lv
           echo " Do we even have F2FS driver ? "
           cat /boot/config-$(uname -r) | grep F2FS
           /sbin/modinfo f2fs
