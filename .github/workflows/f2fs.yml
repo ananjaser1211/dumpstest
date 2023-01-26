@@ -55,10 +55,8 @@ jobs:
           cat /boot/config-$(uname -r) | grep F2FS
           echo "Maybe we should wait a bit"
           sleep 10
-          echo "can we run f2fs"
-          sudo /sbin/mkfs.f2fs -V
-          #sudo modprobe f2fs
-          #cat /proc/modules | grep f2fs
+          sudo modprobe f2fs
+          cat /proc/modules | grep f2fs
           sudo apt-get remove --purge -y "php*" "dotnet*" "mysql*" "nodejs*" "clang*" "google*"
           sudo apt-get autoremove -y
           sudo apt-get clean
