@@ -48,6 +48,8 @@ jobs:
           sudo apt-get install -y  f2fs-tools liblz4-tool zip simg2img
           echo "We dont have modules"
           sudo apt install linux-generic
+          echo "Do we have the f2fs module now?"
+          ls /lib/modules/$(uname -r)/kernel/fs/f2fs
           sudo depmod
           echo "Do we even have F2FS driver ? "
           cat /boot/config-$(uname -r) | grep F2FS
