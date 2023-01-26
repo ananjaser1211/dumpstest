@@ -49,10 +49,6 @@ jobs:
           sudo depmod
           echo "Do we even have F2FS driver ? "
           cat /boot/config-$(uname -r) | grep F2FS
-          echo "Do we have the f2fs module ? "
-          ls /lib/modules/$(uname -r)/kernel/
-          ls /lib/modules/$(uname -r)/kernel/fs/
-          ls /lib/modules/$(uname -r)/kernel/fs/f2fs
           echo "Maybe we should wait a bit"
           sleep 10
           sudo modprobe f2fs
