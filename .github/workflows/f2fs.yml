@@ -48,6 +48,7 @@ jobs:
           sudo depmod
           sudo needrestart -b
           sudo needrestart -lv
+          /sbin/modinfo f2fs
           sudo modprobe -v f2fs
           cat /proc/modules | grep f2fs
           sudo apt-get remove --purge -y "php*" "dotnet*" "mysql*" "nodejs*" "clang*" "google*"
