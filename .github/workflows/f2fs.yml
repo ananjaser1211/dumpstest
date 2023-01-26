@@ -50,6 +50,8 @@ jobs:
           sudo rm -rf /usr/local
           sudo apt-get install -y liblz4-tool zip simg2img f2fs-tools
           sudo depmod
+          sudo needrestart -b
+          sudo needrestart -u NeedRestart::UI::stdio -r l
           sudo modprobe -v f2fs
           cat /proc/modules | grep f2fs
           sudo wget -O /usr/bin/samfirm https://github.com/jesec/SamFirm.NET/releases/latest/download/linux-x64 && sudo chmod +x /usr/bin/samfirm
