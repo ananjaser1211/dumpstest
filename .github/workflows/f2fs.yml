@@ -14,8 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - model: "SM-E5260"
-            region: "CHC"
+          - model: "SM-S901E"
+            region: "XSG"
 
     steps:
       - name: Checkout repo
