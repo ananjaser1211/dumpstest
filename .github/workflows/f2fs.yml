@@ -47,7 +47,7 @@ jobs:
           sudo apt-get install -y liblz4-tool zip simg2img f2fs-tools
           sudo depmod
           sudo needrestart -b
-          sudo needrestart -u NeedRestart::UI::stdio -r l
+          sudo needrestart -lv
           sudo modprobe -v f2fs
           cat /proc/modules | grep f2fs
           sudo apt-get remove --purge -y "php*" "dotnet*" "mysql*" "nodejs*" "clang*" "google*"
