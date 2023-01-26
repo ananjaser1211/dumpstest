@@ -45,7 +45,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get remove --purge -y needrestart 
-          sudo apt-get install -y  f2fs-tools liblz4-tool zip simg2img
+          sudo apt-get install -y  uuid-dev autoconf libtool libselinux1-dev liblz4-tool zip simg2img
+          curr_dir=$(pwd)
+          git clone -b dev git://git.kernel.org/pub/scm/linux/kernel/git/jaegeuk/f2fs-tools.git f2fs
+          cd f2fs && ./autogen.sh && ./configure && sudo make && sudo make install
+          cd $curr_dir
           sudo depmod
           echo "Do we even have F2FS driver ? "
           cat /boot/config-$(uname -r) | grep F2FS
