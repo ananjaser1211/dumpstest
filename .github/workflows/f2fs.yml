@@ -46,8 +46,8 @@ jobs:
           sudo apt-get update
           sudo apt-get remove --purge -y needrestart 
           sudo apt-get install -y  f2fs-tools liblz4-tool zip simg2img
-          echo "We dont have modules"
-          sudo apt install linux-generic
+          echo "Maybe we only need Azure modules"
+          sudo apt-get install linux-modules-extra-5.15.0-1031-azure
           echo "Do we have the f2fs module now?"
           ls /lib/modules/$(uname -r)/kernel/fs/f2fs
           sudo depmod
