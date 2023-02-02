@@ -14,8 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - model: "SM-S901E"
-            region: "XSG"
+          - model: "SM-A135F"
+            region: "EUX"
 
     steps:
       - name: Checkout repo
@@ -44,6 +44,10 @@ jobs:
         if: env.need_update == 1
         run: |
           sudo apt-get update
+          sudo apt-get remove --purge -y "php*" "dotnet*" "mysql*" "nodejs*" "clang*" "google*"
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          sudo rm -rf /usr/local
           sudo apt-get remove --purge -y needrestart 
           sudo apt-get install -y  f2fs-tools liblz4-tool zip simg2img
           echo "Maybe we only need Azure modules"
@@ -55,10 +59,6 @@ jobs:
           sleep 10
           sudo modprobe f2fs
           cat /proc/modules | grep f2fs
-          sudo apt-get remove --purge -y "php*" "dotnet*" "mysql*" "nodejs*" "clang*" "google*"
-          sudo apt-get autoremove -y
-          sudo apt-get clean
-          sudo rm -rf /usr/local
           sudo wget -O /usr/bin/samfirm https://github.com/jesec/SamFirm.NET/releases/latest/download/linux-x64 && sudo chmod +x /usr/bin/samfirm
           sudo wget -O /usr/bin/lpunpack https://corsica.nu/lpunpack && sudo chmod +x /usr/bin/lpunpack
           sudo wget -O /usr/bin/extract-ikconfig https://corsica.nu/extract-ikconfig && sudo chmod +x /usr/bin/extract-ikconfig
@@ -123,17 +123,20 @@ jobs:
           for i in `ls | grep lz4`; do lz4 -dm $i ; rm -rf $i; done
           for i in `ls | grep img`; do simg2img $i raw_$i ; rm -rf $i; mv raw_$i $i; done
           [[ -e super.img ]] && lpunpack --partition=vendor --partition=system super.img && rm -rf super.img
-          [[ -e vendor.img.ext4 ]] && mv vendor.img.ext4 vendor.img && sudo mkdir -p vendor && sudo mount -o loop,rw,sync -t f2fs vendor.img vendor
-          [[ -e vendor ]] && sudo find vendor -type l -ls | awk '{print $11" "$12" "$13}' | sort > $releasedir/symlinks_vendor.txt && for i in `sudo find vendor -not -type l`;do echo -n $(stat -c '%n %C' "$i");if [ -d "$i" ];then echo -n " dir ";else echo -n " file ";fi; echo ""; done | sort > $releasedir/metadata_vendor.txt
-          for i in `sudo find vendor -not -type l`;do if [ -d "$i" ];then mkdir -p rom/$i;else sudo cp -r $i rom/$i;fi; done
-          sudo find rom/vendor -type d -exec sudo chmod 0755 {} \; && sudo find rom/vendor -type f -exec sudo chmod 0644 {} \;
+          [[ -e system.img.ext4 ]] && mv system.img.ext4 system.img
+          [[ -e vendor.img.ext4 ]] && mv vendor.img.ext4 vendor.img
+          [[ -e system.img ]] && sudo mkdir -p system_ro system && sudo mount -o loop,rw,sync system.img system_ro && sudo find system_ro -type l -ls | awk '{print $11" "$12" "$13}' | sort > $releasedir/symlinks_system.txt && for i in `sudo find system_ro -not -type l`;do echo -n $(stat -c '%n %C' "$i");if [ -d "$i" ];then echo -n " dir ";else echo -n " file ";fi; echo ""; done | sort > $releasedir/metadata_system.txt && for i in `sudo find system_ro -not -type l`;do if [ -d "$i" ]; then mkdir -p system/$i;else sudo cp -r $i system/$i;fi; done;fi && sudo find system -type d -exec sudo chmod 0755 {} \; && sudo find system -type f -exec sudo chmod 0644 {} \;
+          [[ -e vendor.img ]] && sudo mkdir -p vendor_ro vendor && sudo mount -o loop,rw,sync vendor.img vendor_ro && sudo find vendor_ro -type l -ls | awk '{print $11" "$12" "$13}' | sort > $releasedir/symlinks_vendor.txt && for i in `sudo find vendor_ro -not -type l`;do echo -n $(stat -c '%n %C' "$i");if [ -d "$i" ];then echo -n " dir ";else echo -n " file ";fi; echo ""; done | sort > $releasedir/metadata_vendor.txt && for i in `sudo find vendor -not -type l`;do if [ -d "$i" ]; then mkdir -p vendor/$i;else sudo cp -r $i vendor/$i;fi; done;fi && sudo find vendor -type d -exec sudo chmod 0755 {} \; && sudo find vendor -type f -exec sudo chmod 0644 {} \;
           misc=(build.prop default.prop floating_feature.xml)
-          for i in ${misc[@]}; do cat `find rom/vendor -name $i` > $releasedir/rom/vendor-$i; done
-          if [[ -d rom/vendor ]]; then cd rom/vendor; zip -r $releasedir/$target_version-vendor.zip *; cd $basedir; else cd system/vendor; zip -r $releasedir/$target_version-vendor.zip *; cd $basedir;fi
+          for i in ${misc[@]}; do cat `find vendor -name $i` > $releasedir/vendor-$i; done
+          misc=(DynamicLockscreen.apk SamsungCamera.apk SmartWidget.apk SecSettings.apk SystemUI.apk framework-res.apk framework.jar services.jar wifi-service.jar telephony-common.jar build.prop floating_feature.xml)
+          for i in ${misc[@]}; do cat `find system -name $i` > $releasedir/$i; done
+          [[ -s system/system/build.prop ]] && cd system/system && zip -r $releasedir/$target_version-lib.zip lib* && zip -r $releasedir/$target_version-etc.zip etc && zip -r $releasedir/$target_version-cameradata.zip cameradata && cd $basedir || cd system && zip -r $releasedir/$target_version-lib.zip lib* && zip -r $releasedir/$target_version-etc.zip etc && zip -r $releasedir/$target_version-cameradata.zip cameradata && cd $basedir
+          if [[ -d vendor ]]; then cd vendor; zip -r $releasedir/$target_version-vendor.zip *; cd $basedir; else cd system/vendor; zip -r $releasedir/$target_version-vendor.zip *; cd $basedir;fi
           cd $releasedir && zip -r $target_version-app_frame.zip *apk *jar && zip -r $target_version-txt.zip *.txt *.xml *.prop *defconfig && cd $basedir
           props=(ro.build.PDA= ro.build.changelist= ro.build.display.id= ro.build.id= ro.build.version.release= ro.build.version.release_or_codename= ro.build.version.security_patch= ro.build.version.sdk= ro.system.build.fingerprint= ro.build.description= ro.build.version.base_os= ro.vendor.build.id= ro.vendor.build.security_patch= ro.vendor.build.version.release_or_codename= ro.vendor.build.fingerprint= ro.netflix.bsp_rev= ro.hardware.chipname= ro.product.board= ro.board.platform= ro.security.keystore.keytype= ro.build.characteristics=)
           for file in $releasedir/*.prop; do for prop in ${props[@]}; do echo $(grep $prop $file) >> version.txt; sed -i ':a;N;$!ba;s/\n\n/\n/g' version.txt; done; done
-          sudo umount vendor && rm -rf *img
+          sudo umount system && sudo umount vendor && rm -rf *img
           echo "folder=$releasedir" >> $GITHUB_ENV
 
       - name: Generate commit tag
@@ -170,6 +173,11 @@ jobs:
           tag_name: ${{ env.name }}
           name: "${{ env.latest_shortversion }} - ${{ matrix.model }} - ${{ matrix.region }}"
           files: |
+            ${{ env.folder }}/${{ env.latest_shortversion }}-etc.zip
+            ${{ env.folder }}/${{ env.latest_shortversion }}-lib.zip
+            ${{ env.folder }}/${{ env.latest_shortversion }}-txt.zip
+            ${{ env.folder }}/${{ env.latest_shortversion }}-app_frame.zip
+            ${{ env.folder }}/${{ env.latest_shortversion }}-cameradata.zip
             ${{ env.folder }}/${{ env.latest_shortversion }}-blcp.zip
             ${{ env.folder }}/${{ env.latest_shortversion }}-vendor.zip
             ${{ env.folder }}/${{ env.latest_shortversion }}-bootrecovery.zip
