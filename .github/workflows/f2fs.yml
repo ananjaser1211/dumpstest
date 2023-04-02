@@ -131,6 +131,8 @@ jobs:
           [[ -e vendor.img ]] && sudo mkdir -p vendor_ro vendor && sudo mount -o loop,ro,sync -t f2fs vendor.img vendor_ro && sudo find vendor_ro -type l -ls | awk '{print $11" "$12" "$13}' | sort > $releasedir/symlinks_vendor.txt && for i in `sudo find vendor_ro -not -type l`;do echo -n $(stat -c '%n %C' "$i");if [ -d "$i" ];then echo -n " dir ";else echo -n " file ";fi; echo ""; done | sort > $releasedir/metadata_vendor.txt && for i in `sudo find vendor_ro -not -type l`;do if [ -d "$i" ]; then sudo mkdir -p vendor/$i; else sudo cp -r $i vendor/$i;fi; done && sudo find vendor -type d -exec sudo chmod 0755 {} \; && sudo find vendor -type f -exec sudo chmod 0644 {} \;
           misc=(build.prop default.prop floating_feature.xml)
           echo " Post Mount "
+          ls /vendor/
+          ls /vendor_ro/
           ls -la
           for i in ${misc[@]}; do cat `find vendor -name $i` > $releasedir/vendor-$i; done
           misc=(DynamicLockscreen.apk SamsungCamera.apk SmartWidget.apk SecSettings.apk SystemUI.apk framework-res.apk framework.jar services.jar wifi-service.jar telephony-common.jar build.prop floating_feature.xml)
