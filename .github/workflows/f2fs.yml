@@ -134,24 +134,12 @@ jobs:
               echo "Vendor partition mounted successfully" && \
               sudo find vendor_ro -type l -ls | awk '{print $11" "$12" "$13}' | sort > $releasedir/symlinks_vendor.txt && \
               echo "Symlinks from vendor partition extracted" && \
-              for i in $(sudo find vendor_ro -not -type l); do
-                  echo "Processing: $i"
-                  if [ -d "$i" ]; then
-                      echo "Creating directory: vendor/$i"
-                      sudo mkdir -p vendor/$i
-                  else
-                      echo "Copying file: $i to vendor/$i"
-                      sudo cp -r "$i" vendor/$i
-                  fi
-              done && \
+              sudo rsync -av --no-links vendor_ro/ vendor/ && \
               sudo find vendor -type d -exec sudo chmod 0755 {} \; && \
               sudo find vendor -type f -exec sudo chmod 0644 {} \;
           misc=(build.prop default.prop floating_feature.xml)
           echo " Post Mount "
-          ls -ld /vendor/
-          ls -ld /vendor_ro/
-          ls -la /vendor/
-          ls -la /vendor_ro/
+          ls -ld *
           for i in ${misc[@]}; do cat `find vendor -name $i` > $releasedir/vendor-$i; done
           misc=(DynamicLockscreen.apk SamsungCamera.apk SmartWidget.apk SecSettings.apk SystemUI.apk framework-res.apk framework.jar services.jar wifi-service.jar telephony-common.jar build.prop floating_feature.xml)
           for i in ${misc[@]}; do cat `find system -name $i` > $releasedir/$i; done
