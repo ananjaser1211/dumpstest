@@ -141,11 +141,17 @@ jobs:
           echo "Post Mount"
           ls -ld *
           for i in "${misc[@]}"; do
-              cat "$(find vendor -name "$i")" > "$releasedir/vendor-$i"
+              file="$(find vendor -name "$i" -not -path "*/vendor_ro/*")"
+              if [[ -f "$file" ]]; then
+                  cat "$file" > "$releasedir/vendor-$i"
+              fi
           done
           misc=(DynamicLockscreen.apk SamsungCamera.apk SmartWidget.apk SecSettings.apk SystemUI.apk framework-res.apk framework.jar services.jar wifi-service.jar telephony-common.jar build.prop floating_feature.xml)
           for i in "${misc[@]}"; do
-              cat "$(find system -name "$i")" > "$releasedir/$i"
+              file="$(find system -name "$i" -not -path "*/vendor_ro/*")"
+              if [[ -f "$file" ]]; then
+                  cat "$file" > "$releasedir/$i"
+              fi
           done
           [[ -s system/system/build.prop ]] && (
               cd system/system && zip -r "$releasedir/$target_version-lib.zip" lib* &&
@@ -169,6 +175,7 @@ jobs:
           props=(ro.build.PDA= ro.build.changelist= ro.build.display.id= ro.build.id= ro.build.version.release= ro.build.version.release_or_codename= ro.build.version.security_patch= ro.build.version.sdk= ro.system.build.fingerprint= ro.build.description= ro.build.version.base_os= ro.vendor.build.id= ro.vendor.build.security_patch= ro.vendor.build.version.release_or_codename= ro.vendor.build.fingerprint= ro.netflix.bsp_rev= ro.hardware.chipname= ro.product.board= ro.board.platform= ro.security.keystore.keytype= ro.build.characteristics=)
           sudo umount system && sudo umount vendor && rm -rf *img
           echo "folder=$releasedir" >> $GITHUB_ENV
+
 
 
       - name: Generate commit tag
