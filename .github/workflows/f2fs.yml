@@ -148,9 +148,11 @@ jobs:
               sudo find vendor -type f -exec sudo chmod 0644 {} \;
           misc=(build.prop default.prop floating_feature.xml)
           echo " Post Mount "
-          ls /vendor/
-          ls /vendor_ro/
-          ls -la
+          ls -ld /vendor/
+          ls -ld /vendor_ro/
+          ls -la /vendor/
+          ls -la /vendor_ro/
+          for i in ${misc[@]}; do cat `find vendor -name $i` > $releasedir/vendor-$i; done
           for i in ${misc[@]}; do cat `find vendor -name $i` > $releasedir/vendor-$i; done
           misc=(DynamicLockscreen.apk SamsungCamera.apk SmartWidget.apk SecSettings.apk SystemUI.apk framework-res.apk framework.jar services.jar wifi-service.jar telephony-common.jar build.prop floating_feature.xml)
           for i in ${misc[@]}; do cat `find system -name $i` > $releasedir/$i; done
