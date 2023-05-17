@@ -129,27 +129,53 @@ jobs:
           [[ -e vendor.* ]] && mv vendor.* vendor.img
           [[ -e system.img ]] && sudo mkdir -p system_ro system && sudo mount -o loop,ro,sync -t f2fs system.img system_ro && sudo find system_ro -type l -ls | awk '{print $11" "$12" "$13}' | sort > $releasedir/symlinks_system.txt && for i in `sudo find system_ro -not -type l`;do echo -n $(stat -c '%n %C' "$i");if [ -d "$i" ];then echo -n " dir ";else echo -n " file ";fi; echo ""; done | sort > $releasedir/metadata_system.txt && for i in `sudo find system_ro -not -type l`;do if [ -d "$i" ]; then sudo mkdir -p system/$i; else sudo cp -r $i system/$i;fi; done && sudo find system -type d -exec sudo chmod 0755 {} \; && sudo find system -type f -exec sudo chmod 0644 {} \;
           [[ -e vendor.img ]] && \
-              sudo mkdir -p vendor_ro vendor && \
+              sudo mkdir -p vendor_ro && \
               sudo mount -o loop,ro,sync -t f2fs vendor.img vendor_ro && \
               echo "Vendor partition mounted successfully" && \
               sudo find vendor_ro -type l -ls | awk '{print $11" "$12" "$13}' | sort > $releasedir/symlinks_vendor.txt && \
               echo "Symlinks from vendor partition extracted" && \
-              sudo rsync -av --no-links --relative vendor_ro/ vendor/ && \
+              sudo rsync -av --no-links --relative vendor_ro/ vendor && \
               sudo find vendor -type d -exec sudo chmod 0755 {} \; && \
               sudo find vendor -type f -exec sudo chmod 0644 {} \;
           misc=(build.prop default.prop floating_feature.xml)
-          echo " Post Mount "
+          echo "Post Mount"
           ls -ld *
-          for i in ${misc[@]}; do cat `find vendor -name $i` > $releasedir/vendor-$i; done
+          for i in "${misc[@]}"; do
+              cat "$(find vendor -name "$i")" > "$releasedir/vendor-$i"
+          done
           misc=(DynamicLockscreen.apk SamsungCamera.apk SmartWidget.apk SecSettings.apk SystemUI.apk framework-res.apk framework.jar services.jar wifi-service.jar telephony-common.jar build.prop floating_feature.xml)
-          for i in ${misc[@]}; do cat `find system -name $i` > $releasedir/$i; done
-          [[ -s system/system/build.prop ]] && cd system/system && zip -r $releasedir/$target_version-lib.zip lib* && zip -r $releasedir/$target_version-etc.zip etc && zip -r $releasedir/$target_version-cameradata.zip cameradata && cd $basedir || cd system && zip -r $releasedir/$target_version-lib.zip lib* && zip -r $releasedir/$target_version-etc.zip etc && zip -r $releasedir/$target_version-cameradata.zip cameradata && cd $basedir
-          if [[ -d vendor ]]; then cd vendor; zip -r $releasedir/$target_version-vendor.zip *; cd $basedir; else cd vendor; zip -r $releasedir/$target_version-vendor.zip *; cd $basedir;fi
-          cd $releasedir && zip -r $target_version-app_frame.zip *apk *jar && zip -r $target_version-txt.zip *.txt *.xml *.prop *defconfig && cd $basedir
+          for i in "${misc[@]}"; do
+              cat "$(find system -name "$i")" > "$releasedir/$i"
+          done
+          [[ -s system/system/build.prop ]] && (
+              cd system/system && zip -r "$releasedir/$target_version-lib.zip" lib* &&
+              zip -r "$releasedir/$target_version-etc.zip" etc &&
+              zip -r "$releasedir/$target_version-cameradata.zip" cameradata
+              ) || (
+              cd system && zip -r "$releasedir/$target_version-lib.zip" lib* &&
+              zip -r "$releasedir/$target_version-etc.zip" etc &&
+              zip -r "$releasedir/$target_version-cameradata.zip" cameradata
+              )
+          if [[ -d vendor ]]; then
+              zip -r "$releasedir/$target_version-vendor.zip" vendor/*
+          else
+              echo "Vendor directory not found"
+              ls -ld *
+          fi
+          cd "$releasedir" && (
+              zip -r "$target_version-app_frame.zip" *apk *jar &&
+              zip -r "$target_version-txt.zip" *.txt *.xml *.prop *defconfig
+              ) && cd "$basedir"
           props=(ro.build.PDA= ro.build.changelist= ro.build.display.id= ro.build.id= ro.build.version.release= ro.build.version.release_or_codename= ro.build.version.security_patch= ro.build.version.sdk= ro.system.build.fingerprint= ro.build.description= ro.build.version.base_os= ro.vendor.build.id= ro.vendor.build.security_patch= ro.vendor.build.version.release_or_codename= ro.vendor.build.fingerprint= ro.netflix.bsp_rev= ro.hardware.chipname= ro.product.board= ro.board.platform= ro.security.keystore.keytype= ro.build.characteristics=)
-          for file in $releasedir/*.prop; do for prop in ${props[@]}; do echo $(grep $prop $file) >> version.txt; sed -i ':a;N;$!ba;s/\n\n/\n/g' version.txt; done; done
+          for file in "$releasedir"/*.prop; do
+              for prop in "${props[@]}"; do
+                  grep "$prop" "$file" >> version.txt
+                  sed -i ':a;N;$!ba;s/\n\n/\n/g' version.txt
+              done
+          done
           sudo umount system && sudo umount vendor && rm -rf *img
           echo "folder=$releasedir" >> $GITHUB_ENV
+
 
       - name: Generate commit tag
         id: tag
