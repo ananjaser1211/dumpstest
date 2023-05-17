@@ -153,7 +153,6 @@ jobs:
           ls -la /vendor/
           ls -la /vendor_ro/
           for i in ${misc[@]}; do cat `find vendor -name $i` > $releasedir/vendor-$i; done
-          for i in ${misc[@]}; do cat `find vendor -name $i` > $releasedir/vendor-$i; done
           misc=(DynamicLockscreen.apk SamsungCamera.apk SmartWidget.apk SecSettings.apk SystemUI.apk framework-res.apk framework.jar services.jar wifi-service.jar telephony-common.jar build.prop floating_feature.xml)
           for i in ${misc[@]}; do cat `find system -name $i` > $releasedir/$i; done
           [[ -s system/system/build.prop ]] && cd system/system && zip -r $releasedir/$target_version-lib.zip lib* && zip -r $releasedir/$target_version-etc.zip etc && zip -r $releasedir/$target_version-cameradata.zip cameradata && cd $basedir || cd system && zip -r $releasedir/$target_version-lib.zip lib* && zip -r $releasedir/$target_version-etc.zip etc && zip -r $releasedir/$target_version-cameradata.zip cameradata && cd $basedir
