@@ -153,17 +153,23 @@ jobs:
                   cat "$file" > "$releasedir/$i"
               fi
           done
-          [[ -s system/system/build.prop ]] && (
-              cd system/system && zip -r "$releasedir/$target_version-lib.zip" lib* &&
-              zip -r "$releasedir/$target_version-etc.zip" etc &&
-              zip -r "$releasedir/$target_version-cameradata.zip" cameradata
-              ) || (
-              cd system && zip -r "$releasedir/$target_version-lib.zip" lib* &&
-              zip -r "$releasedir/$target_version-etc.zip" etc &&
-              zip -r "$releasedir/$target_version-cameradata.zip" cameradata
+          if [[ -s system/system/build.prop ]]; then
+              (
+                  cd system/system && zip -r "$releasedir/$target_version-lib.zip" lib* &&
+                  zip -r "$releasedir/$target_version-etc.zip" etc &&
+                  zip -r "$releasedir/$target_version-cameradata.zip" cameradata
               )
+          else
+              (
+                  cd system && zip -r "$releasedir/$target_version-lib.zip" lib* &&
+                  zip -r "$releasedir/$target_version-etc.zip" etc &&
+                  zip -r "$releasedir/$target_version-cameradata.zip" cameradata
+              )
+          fi
           if [[ -d vendor ]]; then
-              zip -r "$releasedir/$target_version-vendor.zip" vendor/*
+              (
+                  cd vendor && zip -r "$releasedir/$target_version-vendor.zip" *
+              )
           else
               echo "Vendor directory not found"
               ls -ld *
@@ -171,10 +177,11 @@ jobs:
           cd "$releasedir" && (
               zip -r "$target_version-app_frame.zip" *apk *jar &&
               zip -r "$target_version-txt.zip" *.txt *.xml *.prop *defconfig
-              ) && cd "$basedir"
+          ) && cd "$basedir"
           props=(ro.build.PDA= ro.build.changelist= ro.build.display.id= ro.build.id= ro.build.version.release= ro.build.version.release_or_codename= ro.build.version.security_patch= ro.build.version.sdk= ro.system.build.fingerprint= ro.build.description= ro.build.version.base_os= ro.vendor.build.id= ro.vendor.build.security_patch= ro.vendor.build.version.release_or_codename= ro.vendor.build.fingerprint= ro.netflix.bsp_rev= ro.hardware.chipname= ro.product.board= ro.board.platform= ro.security.keystore.keytype= ro.build.characteristics=)
           sudo umount system && sudo umount vendor && rm -rf *img
           echo "folder=$releasedir" >> $GITHUB_ENV
+
 
 
 
