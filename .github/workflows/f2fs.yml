@@ -167,14 +167,6 @@ jobs:
               zip -r "$target_version-txt.zip" *.txt *.xml *.prop *defconfig
               ) && cd "$basedir"
           props=(ro.build.PDA= ro.build.changelist= ro.build.display.id= ro.build.id= ro.build.version.release= ro.build.version.release_or_codename= ro.build.version.security_patch= ro.build.version.sdk= ro.system.build.fingerprint= ro.build.description= ro.build.version.base_os= ro.vendor.build.id= ro.vendor.build.security_patch= ro.vendor.build.version.release_or_codename= ro.vendor.build.fingerprint= ro.netflix.bsp_rev= ro.hardware.chipname= ro.product.board= ro.board.platform= ro.security.keystore.keytype= ro.build.characteristics=)
-          for file in "$releasedir"/vendor/*.prop; do
-              if [[ -f "$file" ]]; then
-                  for prop in "${props[@]}"; do
-                      grep "$prop" "$file" >> version.txt
-                      sed -i ':a;N;$!ba;s/\n\n/\n/g' version.txt
-                  done
-              fi
-          done
           sudo umount system && sudo umount vendor && rm -rf *img
           echo "folder=$releasedir" >> $GITHUB_ENV
 
